@@ -59,9 +59,9 @@ RESPONSE_ADD = 2
 
 # columns of the source_store
 (
-    STORE_ACTIVE, 
-    STORE_DESCRIPTION, 
-    STORE_SOURCE, 
+    STORE_ACTIVE,
+    STORE_DESCRIPTION,
+    STORE_SOURCE,
     STORE_SEPARATOR,
     STORE_VISIBLE
 ) = range(5)
@@ -106,7 +106,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
       if (toplevel):
         try:
           self.window_main.window.set_transient_for(toplevel)
-        except: 
+        except:
           pass
     if options and options.open_tab:
       self.notebook_main.set_current_page(int(options.open_tab))
@@ -118,10 +118,13 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     self.handlers = []
 
     # Put some life into the user interface:
-    self.init_popcon()
-    self.init_auto_update()
-    self.init_release_upgrades()
-    self.show_auto_update_level()
+    #self.init_popcon()
+    #self.init_auto_update()
+    #self.init_release_upgrades()
+    #self.show_auto_update_level()
+    self.vbox_popcon.hide()
+    self.vbox8.hide()
+
     # Setup the key list
     self.init_keys()
     self.show_keys()
@@ -134,7 +137,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     self.show_distro()
 
     # Show the import/replace sources.list dialog if a file different
-    # to the default sources.list was specified 
+    # to the default sources.list was specified
     # NOTE: If the file path points to the default sources.list the user
     #       perhaps assumed that s-p would act like a normal editor.
     #       We have got some bug reports from users calling
@@ -170,7 +173,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     self.combobox_update_interval = gtk.combo_box_new_text()
     self.hbox_check_for_updates.pack_start(self.combobox_update_interval)
     self.combobox_update_interval.show()
-    
+
     # this maps the key (combo-box-index) to the auto-update-interval value
     # where (-1) means, no key
     self.combobox_interval_mapping = { 0 : 1,
@@ -192,10 +195,10 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     # If a custom period is defined add a corresponding entry
     if not update_days in self.combobox_interval_mapping.values():
         if update_days > 0:
-            self.combobox_update_interval.append_text(_("Every %s days") 
+            self.combobox_update_interval.append_text(_("Every %s days")
                                                       % update_days)
             self.combobox_interval_mapping[4] = update_days
-    
+
     for key in self.combobox_interval_mapping:
       if self.combobox_interval_mapping[key] == update_days:
         self.combobox_update_interval.set_active(key)
@@ -212,25 +215,25 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
 
     self.handlers.append(
         (self.checkbutton_auto_update,
-         self.checkbutton_auto_update.connect("toggled", 
+         self.checkbutton_auto_update.connect("toggled",
                                      self.on_auto_update_toggled)))
     self.handlers.append(
         (self.combobox_update_interval,
-         self.combobox_update_interval.connect("changed", 
+         self.combobox_update_interval.connect("changed",
                                      self.on_combobox_update_interval_changed)))
     self.handlers.append(
         (self.radiobutton_updates_download,
-         self.radiobutton_updates_download.connect("toggled", 
+         self.radiobutton_updates_download.connect("toggled",
                                      self.set_update_automation_level,
                                      softwareproperties.UPDATE_DOWNLOAD)))
     self.handlers.append(
         (self.radiobutton_updates_inst_sec,
-         self.radiobutton_updates_inst_sec.connect("toggled", 
+         self.radiobutton_updates_inst_sec.connect("toggled",
                                      self.set_update_automation_level,
                                      softwareproperties.UPDATE_INST_SEC)))
     self.handlers.append(
         (self.radiobutton_updates_notify,
-         self.radiobutton_updates_notify.connect("toggled", 
+         self.radiobutton_updates_notify.connect("toggled",
                                      self.set_update_automation_level,
                                      softwareproperties.UPDATE_NOTIFY)))
 
@@ -283,8 +286,8 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
         checkbox.comp = comp
         # setup the callback and show the checkbutton
         self.handlers.append((checkbox,
-                              checkbox.connect("toggled", 
-                                               self.on_component_toggled, 
+                              checkbox.connect("toggled",
+                                               self.on_component_toggled,
                                                comp.name)))
         self.vbox_dist_comps.add(checkbox)
         checkbox.show()
@@ -322,7 +325,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
   def block_handlers(self):
     for (widget, handler) in self.handlers:
         widget.handler_block(handler)
- 
+
   def unblock_handlers(self):
     for (widget, handler) in self.handlers:
         widget.handler_unblock(handler)
@@ -356,7 +359,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     source_code_state = self.get_source_code_state()
     if source_code_state == None:
         self.checkbutton_source_code.set_inconsistent(True)
-    elif source_code_state == True:        
+    elif source_code_state == True:
         self.checkbutton_source_code.set_active(True)
         self.checkbutton_source_code.set_inconsistent(False)
     else:
@@ -418,7 +421,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
             self.print_source_entry(source)
 
   def set_update_automation_level(self, widget, state):
-    '''Call the backend to set the update automation level to the given 
+    '''Call the backend to set the update automation level to the given
        value'''
     if widget.get_active() == True:
         self.vbox_auto_updates.foreach(lambda b: b.set_inconsistent(False))
@@ -447,7 +450,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     uri = server_store.get_value(iter, 1)
     name = server_store.get_value(iter, 0)
     if name == _("Other..."):
-        dialog = DialogMirror(self.window_main, 
+        dialog = DialogMirror(self.window_main,
                               self.datadir,
                               self.distro,
                               self.custom_mirrors)
@@ -484,7 +487,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
         self.disable_child_source(template)
     else:
         self.enable_child_source(template)
-          
+
   def on_checkbutton_source_code_toggled(self, checkbutton):
     """ Disable or enable the source code for all sources """
     if checkbutton.get_active() == True:
@@ -526,7 +529,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
 
   def hide(self):
     self.window_main.hide()
-    
+
   def init_isv_sources(self):
     """
     Read all valid sources into our ListStore
@@ -536,13 +539,13 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     # STORE_SOURCE - the source entry object
     # STORE_SEPARATOR - if the entry is a separator
     # STORE_VISIBLE - if the entry is shown or hidden
-    self.cdrom_store = gtk.ListStore(gobject.TYPE_BOOLEAN, 
+    self.cdrom_store = gtk.ListStore(gobject.TYPE_BOOLEAN,
                                      gobject.TYPE_STRING,
                                      gobject.TYPE_PYOBJECT,
                                      gobject.TYPE_BOOLEAN,
                                      gobject.TYPE_BOOLEAN)
     self.treeview_cdroms.set_model(self.cdrom_store)
-    self.source_store = gtk.ListStore(gobject.TYPE_BOOLEAN, 
+    self.source_store = gtk.ListStore(gobject.TYPE_BOOLEAN,
                                       gobject.TYPE_STRING,
                                       gobject.TYPE_PYOBJECT,
                                       gobject.TYPE_BOOLEAN,
@@ -562,8 +565,8 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     cell_toggle.set_property("xpad", 2)
     cell_toggle.set_property("ypad", 2)
     self.handlers.append([cell_toggle,
-                          cell_toggle.connect('toggled', 
-                                              self.on_isv_source_toggled, 
+                          cell_toggle.connect('toggled',
+                                              self.on_isv_source_toggled,
                                               self.cdrom_store)])
     col_active = gtk.TreeViewColumn(_("Active"), cell_toggle,
                                     active=COLUMN_ACTIVE)
@@ -582,8 +585,8 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     cell_toggle.set_property("xpad", 2)
     cell_toggle.set_property("ypad", 2)
     self.handlers.append([cell_toggle,
-                          cell_toggle.connect('toggled', 
-                                              self.on_isv_source_toggled, 
+                          cell_toggle.connect('toggled',
+                                              self.on_isv_source_toggled,
                                               self.source_store)])
     col_active = gtk.TreeViewColumn(_("Active"), cell_toggle,
                                     active=COLUMN_ACTIVE)
@@ -611,12 +614,12 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     else:
         self.button_edit.set_sensitive(False)
         self.button_remove.set_sensitive(False)
-  
+
   def on_isv_source_toggled(self, cell_toggle, path, store):
     """Enable or disable the selected channel"""
     #FIXME cdroms need to disable the comps in the childs and sources
     iter = store.get_iter((int(path),))
-    source_entry = store.get_value(iter, STORE_SOURCE) 
+    source_entry = store.get_value(iter, STORE_SOURCE)
     self.toggle_source_use(source_entry)
 
   def init_keys(self):
@@ -710,7 +713,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
         contents = self.render_source(source)
         self.cdrom_store.append([not source.disabled, contents,
                                 source, False, True])
-    
+
   def is_separator(self, model, iter, column):
     """ Return true if the selected row is a separator """
     try:
@@ -718,7 +721,7 @@ class SoftwarePropertiesGtk(SoftwareProperties,SimpleGtkbuilderApp):
     except Exception, e:
       print "is_seperator returned '%s' " % e
       return False
-      
+
   def show_keys(self):
     self.keys_store.clear()
     for key in self.apt_key.list():
