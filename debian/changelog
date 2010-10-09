@@ -4,7 +4,7 @@ software-properties (0.76.7-1tuquito1) maverick; urgency=low
   * new icons
   * Removed stats and update tabs
 
- -- Mario Colque <mario@mario-desktop>  Sat, 09 Oct 2010 20:29:36 -0300
+ -- Mario Colque <mario@tuquito.org.ar>  Sat, 09 Oct 2010 20:29:36 -0300
 
 software-properties (0.76.7) maverick; urgency=low
 
