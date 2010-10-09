@@ -1,0 +1,124 @@
+#!/usr/bin/env python
+#  software-properties - graphical abstraction of the sources.list
+#  
+#  Copyright (c) 2007 Canonical Ltd.
+#
+#  Author: Jonathan Riddell <jriddell@ubuntu.com>
+# 
+#  This program is free software; you can redistribute it and/or 
+#  modify it under the terms of the GNU General Public License as 
+#  published by the Free Software Foundation; either version 2 of the
+#  License, or (at your option) any later version.
+# 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+# 
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+#  USA
+
+import gettext
+import os
+import sys
+
+from optparse import OptionParser
+
+import aptsources
+from aptsources.sourceslist import SourcesList
+
+#sys.path.append("@prefix@/share/update-manager/python")
+
+from softwareproperties.kde.SoftwarePropertiesKDE import SoftwarePropertiesKDE
+
+from PyKDE4.kdecore import ki18n, KAboutData, KCmdLineArgs , KCmdLineOptions
+from PyKDE4.kdeui import KApplication, KMessageBox
+
+class OptionParsed:
+  debug = False
+  massive_debug = False
+  no_update = False
+  enable_component = ""
+
+#--------------- main ------------------
+if __name__ == '__main__':
+  _ = gettext.gettext
+
+  appName     = "softwarepropertieskde"
+  catalog     = "software-properties"
+  programName = ki18n ("Software Sources")
+  version     = "0.74"
+  description = ki18n ("Software Sources List editor")
+  license     = KAboutData.License_GPL
+  copyright   = ki18n ("(c) 2007 Canonical Ltd.")
+  text        = ki18n ("none")
+  homePage    = "https://launchpad.net/software-properties"
+  bugEmail    = ""
+
+  aboutData   = KAboutData (appName, catalog, programName, version, description,
+                                license, copyright, text, homePage, bugEmail)
+
+  KCmdLineArgs.init (sys.argv, aboutData)
+
+  opts = KCmdLineOptions()
+
+  opts.add ("debug", ki18n("Print some debug information to the command line"))
+  opts.add ("massive-debug", ki18n("Print a lot of debug information to the command line"))
+  opts.add ("dont-update", ki18n("No update on repository change (useful if called from an external program)"))
+  opts.add ("enable-component <name>", ki18n("Enable the specified component of the distro's repositories"), "component_arg")
+  opts.add ("enable-ppa <name>", ki18n("Enable PPA with the given name"), "ppa_arg")
+  opts.add ("attach <WinID>", ki18n("Win ID to act as a dialogue for"), "attach_arg")
+  
+  KCmdLineArgs.addCmdLineOptions(opts)
+  
+  #print "no update" + str(options.no_update)
+  # Check for root permissions
+  if os.geteuid() != 0:
+    kapp = KApplication()
+    text = "Please run this software with administrative rights. To do so, run this program with kdesudo."
+    title = "Need administrative powers"
+    msgbox = KMessageBox.sorry(None, text, title, KMessageBox.Notify)
+    sys.exit(1)
+
+  localesApp="software-properties"
+  localesDir="/usr/share/locale"
+  gettext.bindtextdomain(localesApp, localesDir)
+  gettext.textdomain(localesApp)
+
+  data_dir="/usr/share/software-properties/"
+  args = KCmdLineArgs.parsedArgs()
+  afile = ""
+  options = OptionParsed #FIXME set debug, massive_debug
+  if args.count() >= 1:
+    afile = args.arg(0)
+    afile = unicode(afile, 'utf-8')
+
+  attachWinID = None
+  if args.isSet("debug") == True:
+    options.debug = True
+  if args.isSet("massive-debug") == True:
+    options.massive_debug = True
+  if args.isSet("dont-update") == True:
+    options.no_update = True
+  if args.isSet("attach") == True:
+    attachWinID = args.getOption("attach")
+
+  if args.isSet("enable-ppa"):
+    app = SoftwarePropertiesKDE(datadir=data_dir, options=options, file=file)
+    options.enable_ppa = str(args.getOption("enable-ppa"))
+    app.add_source_from_line("ppa:%s" % options.enable_ppa)
+    app.sourceslist.save()
+  elif args.isSet("enable-component") == True:
+    sourceslist = SourcesList()
+    options.enable_component = str(args.getOption("enable-component"))
+    distro = aptsources.distro.get_distro()
+    distro.get_sources(sourceslist)
+    distro.enable_component(options.enable_component)
+    sourceslist.save()
+    print "Enabled the %s component" % options.enable_component
+  else:
+    app = SoftwarePropertiesKDE(datadir=data_dir, options=options, file=file, attachWinID=attachWinID)
+    app.run()
+    sys.exit(app.modified_sourceslist)

@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+  
+DEB_AUTO_CLEANUP_RCS            := yes
+
+DEB_PYTHON_SYSTEM=pycentral
+export DH_PYCENTRAL=include-links
+
+# Add here any variable or target overrides you need
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/python-distutils.mk
+include /usr/share/cdbs/1/rules/simple-patchsys.mk
+
+ifdef _cdbs_rules_debhelper
+$(patsubst %,binary-install/%,software-properties-gtk) :: binary-install/%:
+	dh_scrollkeeper -p$(cdbs_curpkg) $(DEB_DH_SCROLLKEEPER_ARGS)
+	$(if $(wildcard /usr/bin/dh_gconf),dh_gconf -p$(cdbs_curpkg) $(DEB_DH_GCONF_ARGS))
+	$(if $(wildcard /usr/bin/dh_desktop),dh_desktop -p$(cdbs_curpkg) $(DEB_DH_DESKTOP_ARGS))
+	$(if $(wildcard /usr/bin/dh_iconcache),dh_iconcache -p$(cdbs_curpkg) $(DEB_DH_DESKTOP_ARGS))
+$(patsubst %,binary-install/%,software-properties-kde) :: binary-install/%:
+	$(if $(wildcard /usr/bin/dh_desktop),dh_desktop -p$(cdbs_curpkg) $(DEB_DH_DESKTOP_ARGS))
+endif
+
+
+DEB_BUILD_PROG:=debuild --preserve-envvar PATH --preserve-envvar CCACHE_DIR -us -uc $(DEB_BUILD_PROG_OPTS)
+
+arch-build::
+	rm -rf debian/arch-build
+	mkdir -p debian/arch-build/$(DEB_SOURCE_PACKAGE)-$(DEB_VERSION)
+	tar -c --exclude=arch-build --no-recursion -f - `bzr inventory` | (cd debian/arch-build/$(DEB_SOURCE_PACKAGE)-$(DEB_VERSION);tar xf -)
+	(cd debian/arch-build/$(DEB_SOURCE_PACKAGE)-$(DEB_VERSION) && $(DEB_BUILD_PROG))

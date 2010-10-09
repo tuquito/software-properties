@@ -1,0 +1,44 @@
+Source: software-properties
+Section: admin
+Priority: optional
+XS-Python-Version: >= 2.4
+Maintainer: Michael Vogt <michael.vogt@ubuntu.com>
+Build-Depends: debhelper (>= 5.0.37.2), python-central (>= 0.5), libxml-parser-perl, scrollkeeper, intltool, python-all, python-distutils-extra (>= 1.90), cdbs
+Standards-Version: 3.9.1
+Vcs-Bzr: http://code.launchpad.net/~ubuntu-core-dev/software-properties/main
+
+Package: python-software-properties
+Section: python
+Architecture: all
+XB-Python-Version: ${python:Versions}
+Depends: ${python:Depends}, ${misc:Depends}, python, python-apt (>= 0.6.20ubuntu16), lsb-release,  python-gnupginterface, unattended-upgrades, iso-codes
+Description: manage the repositories that you install software from
+ This software provides an abstraction of the used apt repositories.
+ It allows you to easily manage your distribution and independent software
+ vendor software sources.
+
+Package: software-properties-gtk
+Architecture: all
+Replaces: update-manager (<< 0.55)
+Conflicts: update-manager (<< 0.55)
+XB-Python-Version: ${python:Versions}
+Depends: ${python:Depends}, ${misc:Depends}, python, synaptic (>= 0.57.8), gksu, python-software-properties, python-gtk2
+Description: manage the repositories that you install software from
+ This software provides an abstraction of the used apt repositories.
+ It allows you to easily manage your distribution and independent software
+ vendor software sources.
+ .
+ This package contains a GTK+ based graphical interface.
+
+Package: software-properties-kde
+Architecture: all
+Section: kde
+XB-Python-Version: ${python:Versions}
+Depends: ${python:Depends}, ${misc:Depends}, python, python-qt4, python-kde4,
+ python-software-properties, qapt-batch
+Description: manage the repositories that you install software from
+ This software provides an abstraction of the used apt repositories.
+ It allows you to easily manage your distribution and independent software
+ vendor software sources.
+ .
+ This package contains a Qt/KDE based graphical interface.

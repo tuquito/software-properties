@@ -1,0 +1,68 @@
+#!/usr/bin/python
+
+import os
+import sys
+import gettext
+import locale
+
+from softwareproperties.SoftwareProperties import SoftwareProperties
+from softwareproperties.ppa import expand_ppa_line
+from aptsources.sourceslist import SourceEntry
+from optparse import OptionParser
+from gettext import gettext as _
+
+if __name__ == "__main__":
+    try:
+        locale.setlocale(locale.LC_ALL, "")
+    except:
+        pass
+    usage = """Usage: %prog <sourceline>
+
+%prog is a script for adding apt sources.list entries. 
+It can be used to add any repository and also provides a shorthand 
+syntax for adding a Launchpad PPA (Personal Package Archive)
+repository.
+
+<sourceline> - The apt repository source line to add. This is either
+  a complete apt line in quotes, or a PPA shortcut.
+
+  Examples:
+    apt-add-repository 'deb http://myserver/path/to/repo stable myrepo'
+    apt-add-repository ppa:user/repository
+
+If --remove is given the tool will remove the given sourceline from your
+sources.list
+"""
+    parser = OptionParser(usage)
+    # FIXME: provide a --sources-list-file= option that 
+    #        puts the line into a specific file in sources.list.d
+    parser.add_option("-r", "--remove", action="store_true",
+        dest="remove", default=False,
+        help="remove repository from sources.list.d directory")
+    (options, args) = parser.parse_args()
+
+    if os.geteuid() != 0:
+        print _("Error: must run as root")
+        sys.exit(1)
+
+    if (len(args) != 1):
+        print _("Error: need a repository as argument")
+        sys.exit(1)
+
+    # force new ppa file to be 644 (LP: #399709)
+    os.umask(0022)
+
+    sp = SoftwareProperties()	
+    line = args[0]
+    if options.remove:
+        (line, file) = expand_ppa_line(line.strip(), sp.distro.codename)
+        source_entry = SourceEntry(line, file)
+        try:
+            sp.remove_source(source_entry)
+        except ValueError:
+            print _("Error: '%s' doesn't exist in a sourcelist file" % line)
+    else:
+        if not sp.add_source_from_line(line):
+            print _("Error: '%s' invalid" % line)
+            sys.exit(1)
+        sp.sourceslist.save()
